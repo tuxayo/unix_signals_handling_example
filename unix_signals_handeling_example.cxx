@@ -6,33 +6,33 @@ using namespace std;
 
 void fonctionTraitementSignaux(int numeroSignal) {
 	cout << "Signal " << numeroSignal << " reçu" << endl;
-	sleep(5); // pour avoir le temps de tester d'envoyer SIGUSR1
+	sleep(5); // let some time to test SIGUSR1's sending.
 	cout << "Traitement signal fini" << endl;
 }
 
 int main(int argc, char * argv[]) {
-	//On créé la sigaction qui va contenir les infos sur quoi faire en cas de signal,
-	//on fait aussi OldAction si on veux sauvegarder l'ancienne sigaction asociée à un signal
+	// We create the sigaction which will store the action's information to do when receving a signal.
+	// We create too an OldAction if we want to store the previous sigaction linked to a signal.
 	struct sigaction ActionEnCasDeSignal/*, OldAction */;
 
-	//SIGQUIT:
-	ActionEnCasDeSignal.sa_handler = SIG_IGN; // ignore le signal
-	// associe notre action avec le signal SIGQUIT
+	// SIGQUIT:
+	ActionEnCasDeSignal.sa_handler = SIG_IGN; // ignore the signal
+	// Link our action with SIGQUIT signal
 	sigaction(SIGQUIT, &ActionEnCasDeSignal, NULL/* &OldAction */);
 
-	//SIGTERM: en gardant la même sigaction (c'est-à-dire ActionEnCasDeSignal) si on fait pas attention
-	//il risque d'y avoir des problèmes à cause de paramètres restés pour les signaux précédents.
-	// Cette fois on met une fonction à lancer à la reception du signal
+	// SIGTERM : If we carelessy take the same sigaction (ActionEnCasDeSignal), there will be problems
+	// with the previous parameters. This time, we link a function to the signal reception.
 	ActionEnCasDeSignal.sa_handler = fonctionTraitementSignaux;
-	// vide la liste des signaux bloqués pendant le traitement de SIGTERM (par défaut il y en a, on en veux pas)
+	// Clears the blocked signals list during the SIGTERM signal processing (there are some by default that
+	// we don't want).
 	sigemptyset(&ActionEnCasDeSignal.sa_mask);
-	// ajout SIGUSR1 à la liste des signaux bloqués pour n'avoir que lui
+	// Add SIGUSR1 to the blocked signals list to have only it.
 	sigaddset(&ActionEnCasDeSignal.sa_mask, SIGUSR1);
-	// associe notre action avec le signal SIGTERM
+	// Link our action with SIGTERM
 	sigaction(SIGTERM, &ActionEnCasDeSignal, NULL/* &OldAction */);
 
 	while (true) {
-	} // attente (active donc pas propre) de signaux
+	} // Active (thus bad, wrong and as horrible as a while(42)) signal waiting.
 
 	return 0;
 }  //  main()
